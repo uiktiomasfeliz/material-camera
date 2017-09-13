@@ -8,6 +8,7 @@ ext {
     SUPPORT_LIB_VERSION = '25.0.0'
     VIDEO_PLAYER_VERSION = '0.3.0'
     MD_VERSION = '0.9.1.0'
+    GLIDE_VERSION = '3.7.0'
     TARGET_SDK = 25
     BUILD_TOOLS = "24.0.3"
 }
@@ -38,12 +39,16 @@ android {
 repositories {
     jcenter()
     maven { url "https://dl.bintray.com/drummer-aidan/maven" }
+    mavenCentral()
+    maven { url 'https://maven.google.com' }
 }
 
 dependencies {
     compile "com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION"
     compile "com.afollestad:easyvideoplayer:$VIDEO_PLAYER_VERSION"
     compile "com.afollestad.material-dialogs:core:$MD_VERSION"
+    compile "com.github.bumptech.glide:glide:$GLIDE_VERSION"
+    //annotationProcessor "com.github.bumptech.glide:compiler:$GLIDE_VERSION" //4.1.1
 }
 
 apply from: 'https://raw.githubusercontent.com/afollestad/aidanfollestad.com/master/android-lib-release.gradle'

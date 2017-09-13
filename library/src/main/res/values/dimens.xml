@@ -10,5 +10,5 @@
     <dimen name="mcam_regular_header_fontsize">36sp</dimen>
     <dimen name="mcam_action_icon_size">56dp</dimen>
     <dimen name="mcam_action_icon_size_smaller">48dp</dimen>
-
+    <dimen name="mcam_gallery_item_size">70dp</dimen>
 </resources>

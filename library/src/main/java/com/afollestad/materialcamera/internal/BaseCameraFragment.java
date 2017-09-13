@@ -6,17 +6,21 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,10 +33,12 @@ import com.afollestad.materialcamera.MaterialCamera;
 import com.afollestad.materialcamera.R;
 import com.afollestad.materialcamera.util.CameraUtil;
 import com.afollestad.materialcamera.util.Degrees;
+import com.afollestad.materialcamera.util.GalleryItemAdapter;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static com.afollestad.materialcamera.internal.BaseCaptureActivity.CAMERA_POSITION_BACK;
@@ -58,6 +64,8 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
     protected Handler mPositionHandler;
     protected MediaRecorder mMediaRecorder;
     private int mIconTextColor;
+
+    protected RecyclerView mGallery;
 
     protected static void LOG(Object context, String message) {
         Log.d(context instanceof Class<?> ? ((Class<?>) context).getSimpleName() :
@@ -161,6 +169,28 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
         } else {
             mDelayStartCountdown.setText(Long.toString(mInterface.autoRecordDelay() / 1000));
         }
+
+        mGallery = (RecyclerView) view.findViewById(R.id.mcam_gallery);
+        mGallery.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false));
+        GalleryItemAdapter adapter = new GalleryItemAdapter(view.getContext(), getAllShownImagesPath(),
+                new GalleryItemAdapter.OnItemClickListener() {
+                    @Override
+                    public void galleryResponse(String img) {
+                        /*
+                        Bundle conData = new Bundle();
+                        conData.putString("SDCardUrl", img);
+
+                        Intent intent = new Intent();
+                        //intent.putExtra("SDCardUrl", urlPath);
+                        intent.putExtras(conData);
+                        setResult(Activity.RESULT_OK, intent);
+                        //saveOnSd(MemPhoto);
+                        finish();
+                        */
+                    }
+                });
+
+        mGallery.setAdapter(adapter);
     }
 
     protected void onFlashModesLoaded() {
@@ -447,5 +477,64 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
         }
 
         setImageRes(mButtonFlash, res);
+    }
+
+    private ArrayList<String> getAllShownImagesPath() {
+
+        Cursor cursor;
+        String absolutePathOfImage;
+        int column_index_data;
+        ArrayList<String> listOfAllImages = new ArrayList<>();
+
+        cursor = getActivity().getApplicationContext().getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[]{
+                        MediaStore.Images.Media._ID,
+                        MediaStore.Images.Media.DATA,
+                        MediaStore.Images.Media.ORIENTATION,
+                        MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+                        MediaStore.Images.Media.BUCKET_ID,
+                        MediaStore.Images.Media.MIME_TYPE ,
+                },
+                null,
+                null,
+                MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC"
+        );
+
+        if(cursor != null) {
+            column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+
+            while (cursor.moveToNext()) {
+                absolutePathOfImage = cursor.getString(column_index_data);
+
+                listOfAllImages.add(absolutePathOfImage);
+            }
+        }
+
+        cursor = getActivity().getApplicationContext().getContentResolver().query(
+                MediaStore.Images.Media.INTERNAL_CONTENT_URI,
+                new String[]{
+                        MediaStore.Images.Media._ID,
+                        MediaStore.Images.Media.DATA,
+                        MediaStore.Images.Media.ORIENTATION,
+                        MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+                        MediaStore.Images.Media.BUCKET_ID,
+                        MediaStore.Images.Media.MIME_TYPE
+                },
+                null,
+                null,
+                MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC"
+        );
+
+        if(cursor != null) {
+            column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+
+            while (cursor.moveToNext()) {
+                absolutePathOfImage = cursor.getString(column_index_data);
+
+                listOfAllImages.add(absolutePathOfImage);
+            }
+        }
+        return listOfAllImages;
     }
 }
