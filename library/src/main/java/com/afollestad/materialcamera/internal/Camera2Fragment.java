@@ -989,11 +989,22 @@ public class Camera2Fragment extends BaseCameraFragment implements View.OnClickL
             int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
 
             // default camera orientation used to be 90 degrees, for Nexus 5X, 6P it is 270 degrees
-            if (sensorOrientation == Degrees.DEGREES_270) {
+            /*if (sensorOrientation == Degrees.DEGREES_270) {
                 displayRotation += 2 % 3;
             }
+            */
+            if(mOrientation == -1)
+                mOrientation = displayRotation;
+            else if(mOrientation == 0 && sensorOrientation == Degrees.DEGREES_270)
+                mOrientation += 2 % 3;//= displayRotation;
+            else if(mOrientation == 1)
+                mOrientation = 3;
+            else if(mOrientation == 2 && sensorOrientation == Degrees.DEGREES_270)
+                mOrientation = 0;
+            else if(mOrientation == 3)
+                mOrientation = 1;
 
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(displayRotation));
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(mOrientation));
 
             CameraCaptureSession.CaptureCallback CaptureCallback
                     = new CameraCaptureSession.CaptureCallback() {

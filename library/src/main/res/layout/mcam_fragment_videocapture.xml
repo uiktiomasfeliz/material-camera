@@ -19,6 +19,7 @@
         android:layout_above="@+id/controlsFrame"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:visibility="gone"
         android:layout_marginBottom="15dp" />
 
     <RelativeLayout

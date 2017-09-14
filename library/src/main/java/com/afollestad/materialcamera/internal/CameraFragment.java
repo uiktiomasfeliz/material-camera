@@ -23,6 +23,7 @@ import com.afollestad.materialcamera.util.CameraUtil;
 import com.afollestad.materialcamera.util.Degrees;
 import com.afollestad.materialcamera.util.ImageUtil;
 import com.afollestad.materialcamera.util.ManufacturerUtil;
+import com.afollestad.materialcamera.util.SimpleOrientationListener;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -515,6 +516,8 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
         Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
             public void onShutter() {
                 //Log.d(TAG, "onShutter'd");
+                mCamera.getParameters().setRotation(90);
+                mCamera.setDisplayOrientation(90);
             }
         };
         Camera.PictureCallback rawCallback = new Camera.PictureCallback() {

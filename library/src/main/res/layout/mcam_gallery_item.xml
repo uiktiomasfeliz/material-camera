@@ -2,13 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="wrap_content"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/custom_image"
         android:layout_width="@dimen/mcam_gallery_item_size"
         android:layout_height="@dimen/mcam_gallery_item_size"
         android:layout_marginRight="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="5dp"
         android:visibility="gone"/>
 
     <ImageView
@@ -16,6 +18,8 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginRight="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="5dp"
         android:visibility="gone"/>
 
 </LinearLayout>

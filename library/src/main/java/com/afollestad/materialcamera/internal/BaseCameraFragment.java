@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
@@ -34,6 +35,7 @@ import com.afollestad.materialcamera.R;
 import com.afollestad.materialcamera.util.CameraUtil;
 import com.afollestad.materialcamera.util.Degrees;
 import com.afollestad.materialcamera.util.GalleryItemAdapter;
+import com.afollestad.materialcamera.util.SimpleOrientationListener;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
@@ -66,6 +68,9 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
     private int mIconTextColor;
 
     protected RecyclerView mGallery;
+    protected int mOrientation = -1;
+
+    private SimpleOrientationListener mOrientationListener;
 
     protected static void LOG(Object context, String message) {
         Log.d(context instanceof Class<?> ? ((Class<?>) context).getSimpleName() :
@@ -131,6 +136,9 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
         mButtonFlash = (ImageButton) view.findViewById(R.id.flash);
         setupFlashMode();
 
+        mGallery = (RecyclerView) view.findViewById(R.id.mcam_gallery);
+
+
         mButtonVideo.setOnClickListener(this);
         mButtonStillshot.setOnClickListener(this);
         mButtonFacing.setOnClickListener(this);
@@ -162,20 +170,19 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
             mButtonStillshot.setVisibility(View.VISIBLE);
             setImageRes(mButtonStillshot, mInterface.iconStillshot());
             mButtonFlash.setVisibility(View.VISIBLE);
-        }
 
-        if (mInterface.autoRecordDelay() < 1000) {
-            mDelayStartCountdown.setVisibility(View.GONE);
-        } else {
-            mDelayStartCountdown.setText(Long.toString(mInterface.autoRecordDelay() / 1000));
-        }
+            mGallery.setVisibility(View.VISIBLE);
 
-        mGallery = (RecyclerView) view.findViewById(R.id.mcam_gallery);
-        mGallery.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false));
-        GalleryItemAdapter adapter = new GalleryItemAdapter(view.getContext(), getAllShownImagesPath(),
-                new GalleryItemAdapter.OnItemClickListener() {
-                    @Override
-                    public void galleryResponse(String img) {
+            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+                mGallery.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
+            } else if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                mGallery.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false));
+            }
+
+            GalleryItemAdapter adapter = new GalleryItemAdapter(view.getContext(), getAllShownImagesPath(),
+                    new GalleryItemAdapter.OnItemClickListener() {
+                        @Override
+                        public void galleryResponse(String img) {
                         /*
                         Bundle conData = new Bundle();
                         conData.putString("SDCardUrl", img);
@@ -187,10 +194,34 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
                         //saveOnSd(MemPhoto);
                         finish();
                         */
-                    }
-                });
+                        }
+                    });
 
-        mGallery.setAdapter(adapter);
+            mGallery.setAdapter(adapter);
+
+            mOrientationListener = new SimpleOrientationListener(view.getContext()) {
+                @Override
+                public void onSimpleOrientationChanged(int orientation) {
+                    mOrientation = orientation;
+                    /*
+                    if(orientation == Configuration.ORIENTATION_LANDSCAPE){
+                        mOrientation = orientation;
+                    }else if(orientation == Configuration.ORIENTATION_PORTRAIT){
+                        mOrientation = orientation;
+                    }
+                    */
+                }
+            };
+
+            mOrientationListener.enable();
+        }
+
+        if (mInterface.autoRecordDelay() < 1000) {
+            mDelayStartCountdown.setVisibility(View.GONE);
+        } else {
+            mDelayStartCountdown.setText(Long.toString(mInterface.autoRecordDelay() / 1000));
+        }
+
     }
 
     protected void onFlashModesLoaded() {
@@ -268,6 +299,7 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
         mButtonFacing = null;
         mButtonFlash = null;
         mRecordDuration = null;
+        mOrientationListener = null;
     }
 
     @Override
@@ -282,6 +314,8 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
                 mRecordDuration.setText(String.format("-%s", CameraUtil.getDurationString(mInterface.getLengthLimit())));
             }
         }
+        if(mOrientationListener != null)
+            mOrientationListener.enable();
     }
 
     @SuppressWarnings("deprecation")
@@ -319,6 +353,8 @@ abstract class BaseCameraFragment extends Fragment implements CameraUriInterface
     public void onPause() {
         super.onPause();
         cleanup();
+        if(mOrientationListener != null)
+            mOrientationListener.disable();
     }
 
     @Override
